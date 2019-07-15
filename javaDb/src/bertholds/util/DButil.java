@@ -8,12 +8,14 @@ import java.sql.SQLException;
 import com.sun.rowset.CachedRowSetImpl;
 
 public class DButil {
-    private static final String               JDBC_DRIVER       = "com.mysql.jdbc.Driver";
-    private static final String               CONN_STRING       = "jdbc:mysql://localhost:3306/javaFX";
+    private static final String       JDBC_DRIVER = "com.mysql.jdbc.Driver";
+    private static final String       CONN_STRING = "jdbc:mysql://localhost:3306/javaFX";
 
-    private static Connection                 connection        = null;
-    private static java.sql.PreparedStatement preparedStatement = null;
-    private static ResultSet                  resultSet         = null;
+    private static Connection         connection  = null;
+    private static java.sql.Statement statement   = null;
+    private static ResultSet          resultSet   = null;
+    // private static ResultSetMetaData metaData = null;
+    private static int                result;
 
     public static void dbConnect() throws ClassNotFoundException, SQLException {
 
@@ -50,31 +52,31 @@ public class DButil {
     }
 
     // this is the insert update and delete organisation
-    public static void dbExecuteQuery( String query ) throws SQLException, ClassNotFoundException {
+    public static int dbExecuteQuery( String query ) throws SQLException, ClassNotFoundException {
         try {
             dbConnect();
-            preparedStatement = connection.prepareStatement( query );
-            resultSet = preparedStatement.executeQuery();
+            statement = connection.createStatement();
+            result = statement.executeUpdate( query );
+            // metaData = resultSet.getMetaData();
+
         } catch ( Exception e ) {
             System.out.println( " problem occured at dbexecuteQuery operation" + e );
             throw e;
         } finally {
-            if ( preparedStatement != null ) {
-                preparedStatement.close();
-            }
-            if ( resultSet != null ) {
-                resultSet.close();
+            if ( statement != null ) {
+                statement.close();
             }
             dbDisconnect();
         }
+        return result;
     }
 
     public static ResultSet dbExecute( String query ) throws ClassNotFoundException, SQLException {
         CachedRowSetImpl cachedRowSetImpl = null;
         try {
             dbConnect();
-            preparedStatement = connection.prepareStatement( query );
-            resultSet = preparedStatement.executeQuery();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery( query );
             cachedRowSetImpl = new CachedRowSetImpl();
             cachedRowSetImpl.populate( resultSet );
         } catch ( Exception e ) {
@@ -84,8 +86,8 @@ public class DButil {
             if ( resultSet != null ) {
                 resultSet.close();
             }
-            if ( preparedStatement != null ) {
-                preparedStatement.close();
+            if ( statement != null ) {
+                statement.close();
             }
             dbDisconnect();
         }
